@@ -2,8 +2,6 @@
 #include <DHT.h>
 #include <DHT_U.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include <FirebaseArduino.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
@@ -29,7 +27,6 @@ NTPClient timeClient(ntpUDP);
 void setup() {
   Serial.begin(BAUDRATE);
   connectToWiFi(SSID, PASSWORD);
-  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 
   timeClient.begin();
   dht.begin();
@@ -45,7 +42,6 @@ void loop() {
     timeClient.update();
     readSensors();
     displaySensors(humidity, temperature);
-    //sendDataToFirebase(humidity, temperature);
   }
 }
 
@@ -99,20 +95,4 @@ void displaySensors(float humidity, float temperature) {
   Serial.print("Temperature: ");
   Serial.print(temperature);
   Serial.println("°C");
-}
-
-void sendDataToFirebase(float humidity, float temperature) {
-  String humValue = Firebase.pushFloat("dht11/humidity/Value", humidity);
-  if (Firebase.failed()) {
-    Serial.print("\nError pushing /dht11/humidity/Value failed: " + humValue);
-    Serial.println(Firebase.error());
-    return;
-  }
-
-  String tempValue = Firebase.pushFloat("dht11/temperature/Value", temperature);
-  if (Firebase.failed()) {
-    Serial.print("\nError pushing /dht11/temperature/Value failed:" + tempValue);
-    Serial.println(Firebase.error());
-    return;
-  }
 }
