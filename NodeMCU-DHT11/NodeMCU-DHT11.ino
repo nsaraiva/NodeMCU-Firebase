@@ -4,9 +4,10 @@
 #include <ESP8266WiFi.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
+#include <ESP8266HTTPClient.h>
+#include <FirebaseArduino.h>
 
 #include "credentials.h"
-
 
 #define DHTPIN    D2
 #define DHTTYPE   DHT11
@@ -17,7 +18,8 @@ unsigned long prevMillis = 0; //Previous milliseconds
 const long interval = 2000;
 
 float humidity;     // percentage
-float temperature;  //Celsius
+float temperature;  // Celsius
+String currTime;
 
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -27,6 +29,7 @@ NTPClient timeClient(ntpUDP);
 void setup() {
   Serial.begin(BAUDRATE);
   connectToWiFi(SSID, PASSWORD);
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 
   timeClient.begin();
   timeClient.setTimeOffset(-10800); //Brasilia Time(BRT) UTC -3
@@ -41,8 +44,10 @@ void loop() {
   if (currMillis - prevMillis >= interval) {
     prevMillis = currMillis;     
     timeClient.update();
+    currTime = timeClient.getFormattedTime();
     readSensors();
-    displaySensors(humidity, temperature);
+    displaySensors();
+    sendDataToFirebase();
   }
 }
 
@@ -74,7 +79,7 @@ void connectToWiFi(char const *ssid, char const *password) {
   Serial.println("");
 }
 
-void readSensors() {
+void readSensors() {  
   // Reading Humidity value
   humidity = dht.readHumidity();
   
@@ -88,12 +93,30 @@ void readSensors() {
   }
 }
 
-void displaySensors(float humidity, float temperature) {
-  Serial.println(timeClient.getFormattedTime());
+void displaySensors() {
+  Serial.println(currTime);
   Serial.print("Humidity: ");
   Serial.print(humidity);
   Serial.println("%");
   Serial.print("Temperature: ");
   Serial.print(temperature);
   Serial.println("°C");
+}
+
+void sendDataToFirebase() {
+  String humValue = Firebase.pushFloat("dht11/humidity", humidity);
+  if (Firebase.failed()) {
+    Serial.print("\nError pushing /dht11/humidity failed: " + humValue);
+    Serial.println(Firebase.error());
+    return;
+  }
+
+  String tempValue = Firebase.pushFloat("dht11/temperature", temperature);
+  if (Firebase.failed()) {
+    Serial.print("\nError pushing /dht11/temperature failed:" + tempValue);
+    Serial.println(Firebase.error());
+    return;
+  }
+
+  Firebase.pushString("dht11/time", currTime);
 }
