@@ -29,6 +29,7 @@ void setup() {
   connectToWiFi(SSID, PASSWORD);
 
   timeClient.begin();
+  timeClient.setTimeOffset(-10800);
   dht.begin();
 }
 
