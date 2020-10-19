@@ -29,7 +29,7 @@ void setup() {
   connectToWiFi(SSID, PASSWORD);
 
   timeClient.begin();
-  timeClient.setTimeOffset(-10800);
+  timeClient.setTimeOffset(-10800); //Brasilia Time(BRT) UTC -3
   dht.begin();
 }
 
