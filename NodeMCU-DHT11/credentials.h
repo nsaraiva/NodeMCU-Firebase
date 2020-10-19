@@ -1,5 +1,5 @@
-#define SSID "Trojan"
-#define PASSWORD "einstein1879"
+#define SSID "*****"
+#define PASSWORD "*******"
 
-#define FIREBASE_HOST "sensorando.firebaseio.com"
-#define FIREBASE_AUTH "UeHpHJG2QEwNhgUi4hZS29HNUGfmmcEiNarXgNsc"
+#define FIREBASE_HOST "******.firebaseio.com"
+#define FIREBASE_AUTH "**********************"
